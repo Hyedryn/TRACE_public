@@ -1,0 +1,231 @@
+version: '3.8'
+
+x-selenium-node-defaults: &selenium-node-defaults
+  image: seleniarm/node-chromium:latest
+  shm_size: 2g
+  depends_on:
+    - selenium-hub
+  environment:
+    - SE_EVENT_BUS_HOST=selenium-hub
+    - SE_EVENT_BUS_PUBLISH_PORT=4442
+    - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    - SE_NODE_SESSION_TIMEOUT=1200
+
+x-scraper-defaults: &scraper-defaults
+  build: ./scraper
+  depends_on:
+    db:
+      condition: service_healthy
+    selenium-hub:
+      condition: service_started
+
+x-scraper-env-defaults: &scraper-env
+  # Database configuration
+  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  POSTGRES_USER: ${POSTGRES_USER}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  POSTGRES_DB: ${POSTGRES_DB}
+  
+  # API Keys - simplified to match config.yaml structure
+  OPENAI_API_KEY: ${OPENAI_API_KEY}
+  AZURE_OPENAI_KEY: ${AZURE_OPENAI_KEY}
+  AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT}
+  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+  
+  # Selenium configuration
+  SELENIUM_HUB_URL: http://selenium-hub:4444
+
+  BROWSER_TYPE: ${BROWSER_TYPE}
+
+    
+services:
+  db:
+    image: postgres:15
+    container_name: youtube_research_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck: 
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  selenium-hub:
+    image: seleniarm/hub:latest
+    container_name: selenium_hub
+    ports:
+      - "4444:4444"
+
+  selenium-node-1:
+    <<: *selenium-node-defaults
+    container_name: selenium_node_1
+    ports:
+      - "7901:7900"
+
+  selenium-node-2:
+    <<: *selenium-node-defaults
+    container_name: selenium_node_2
+    ports:
+      - "7902:7900"
+
+  selenium-node-3:
+    <<: *selenium-node-defaults
+    container_name: selenium_node_3
+    ports:
+      - "7903:7900"
+
+  selenium-node-4:
+    <<: *selenium-node-defaults
+    container_name: selenium_node_4
+    ports:
+      - "7904:7900"
+    
+  selenium-node-5:
+    <<: *selenium-node-defaults
+    container_name: selenium_node_5
+    ports:
+      - "7905:7900"
+
+  selenium-node-6:
+    <<: *selenium-node-defaults
+    container_name: selenium_node_6
+    ports:
+      - "7906:7900"
+
+  selenium-node-7:
+    <<: *selenium-node-defaults
+    container_name: selenium_node_7
+    ports:
+      - "7907:7900"
+
+  selenium-node-8:
+    <<: *selenium-node-defaults
+    container_name: selenium_node_8
+    ports:
+      - "7908:7900"
+
+  selenium-node-9:
+    <<: *selenium-node-defaults
+    container_name: selenium_node_9
+    ports:
+      - "7909:7900"
+
+  selenium-node-10:
+    <<: *selenium-node-defaults
+    container_name: selenium_node_10
+    ports:
+      - "7910:7900"
+
+  selenium-node-11:
+    <<: *selenium-node-defaults
+    container_name: selenium_node_11
+    ports:
+      - "7911:7900"
+        
+  
+  scraper-tech-enthusiast:
+    <<: *scraper-defaults
+    container_name: scraper_tech_enthusiast
+    volumes:
+      - ./configs/tech-enthusiast-experiment.yaml:/app/tech-enthusiast-experiment.yaml
+    environment:
+      <<: *scraper-env
+      CONFIG_FILE: /app/tech-enthusiast-experiment.yaml
+
+  scraper-pro_israel_low_div_en:
+    <<: *scraper-defaults
+    #container_name: scraper_pro_israel_low_div_en
+    volumes:
+      - ./configs/pro-israel-experiment.yaml:/app/pro-israel-experiment.yaml
+    environment:
+      <<: *scraper-env
+      CONFIG_FILE: /app/pro-israel-experiment.yaml
+
+  scraper-pro_palestine_low_div_en:
+    <<: *scraper-defaults
+    #container_name: scraper_pro_palestine_low_div_en
+    volumes:
+      - ./configs/pro-palestine-experiment.yaml:/app/pro-palestine-experiment.yaml
+    environment:
+      <<: *scraper-env
+      CONFIG_FILE: /app/pro-palestine-experiment.yaml
+
+
+# To run another scraper for a different profile, add it here.
+# For example, for a profile with ID 2:
+#  scraper-car-enthusiast:
+#    <<: *scraper-defaults
+#    container_name: scraper_car_enthusiast
+#        volumes:
+#      - ./configs/car-enthusiast-experiment.yaml:/app/car-enthusiast-experiment.yaml
+#    environment:
+#      <<: *scraper-env
+#      CONFIG_FILE: /app/car-enthusiast-experiment.yaml
+
+  gui:
+    build: ./gui
+    container_name: gui
+    depends_on:
+      db:
+        condition: service_healthy
+      selenium-hub:
+        condition: service_started
+      selenium-node-1:
+        condition: service_started
+      selenium-node-2:
+        condition: service_started
+      selenium-node-3:
+        condition: service_started
+      selenium-node-4:
+        condition: service_started
+      selenium-node-5:
+        condition: service_started
+      selenium-node-6:
+        condition: service_started
+      selenium-node-7:
+        condition: service_started
+      selenium-node-8:
+        condition: service_started
+      selenium-node-9:
+        condition: service_started
+      selenium-node-10:
+        condition: service_started
+      selenium-node-11:
+        condition: service_started
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./configs:/app/configs
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AZURE_OPENAI_KEY=${AZURE_OPENAI_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - HOST_PROJECT_PATH=${PWD}
+      - VNC_HOST=${VNC_HOST:-localhost}
+
+  enrichment_worker:
+    build: ./enrichment_worker
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+      - WEBSHARE_PROXY_USERNAME=${WEBSHARE_PROXY_USERNAME}
+      - WEBSHARE_PROXY_PASSWORD=${WEBSHARE_PROXY_PASSWORD}
+
+volumes:
+  postgres_data:

@@ -1,0 +1,11 @@
+selenium
+langchain>=0.3.27
+langchain-openai>=0.3.32
+langchain-community>=0.0.20
+psycopg2-binary
+requests
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+pyyaml
+beautifulsoup4
+lxml

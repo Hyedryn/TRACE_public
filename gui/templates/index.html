@@ -1,0 +1,539 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>YouTube Algorithm Research Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+      :root {
+        --primary-color: #e74c3c;
+        --secondary-color: #3498db;
+        --dark-bg: #2c3e50;
+        --card-bg: #ffffff;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .main-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow);
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 20px 20px;
+      }
+
+      .main-header h1 {
+        color: var(--dark-bg);
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .main-header h1 i {
+        color: var(--primary-color);
+      }
+
+      .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .card-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1.5rem;
+        font-weight: 600;
+        font-size: 1.2rem;
+      }
+
+      .card-body {
+        padding: 2rem;
+      }
+
+      .form-label {
+        font-weight: 600;
+        color: var(--dark-bg);
+        margin-bottom: 0.5rem;
+      }
+
+      .form-control, .form-select {
+        border-radius: 10px;
+        border: 2px solid #e0e0e0;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+      }
+
+      .form-control:focus, .form-select:focus {
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+      }
+
+      .btn {
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), #c0392b);
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #c0392b, var(--primary-color));
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+      }
+
+      .btn-secondary:hover {
+        background: linear-gradient(135deg, #2980b9, var(--secondary-color));
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+      }
+
+      .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+
+      .table {
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .table thead {
+        background: linear-gradient(135deg, var(--dark-bg), #34495e);
+        color: white;
+      }
+
+      .table tbody tr {
+        transition: background-color 0.3s ease;
+      }
+
+      .table tbody tr:hover {
+        background-color: #f8f9fa;
+      }
+
+      .persona-selector {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 10px;
+        border-left: 4px solid var(--secondary-color);
+      }
+
+      .input-group-text {
+        background: var(--secondary-color);
+        color: white;
+        border: none;
+        font-weight: 600;
+      }
+
+      .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+
+      .modal-content {
+        border-radius: 15px;
+        border: none;
+      }
+
+      .modal-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-radius: 15px 15px 0 0;
+      }
+
+      .section-divider {
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        border-radius: 10px;
+        margin: 1rem 0;
+      }
+
+      #profiles-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+        border: 2px dashed #dee2e6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-header">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h1><i class="bi bi-youtube"></i> TRACE Dashboard</h1>
+            <p class="text-muted mb-0">Configure and monitor experiments to study algorithmic recommendations</p>
+          </div>
+          <div>
+            <button class="btn btn-info me-2" data-bs-toggle="modal" data-bs-target="#database-modal">
+              <i class="bi bi-database-fill me-2"></i>Database
+            </button>
+            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#settings-modal">
+              <i class="bi bi-gear-fill me-2"></i>Settings
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container pb-5">
+
+      <div class="row">
+        <div class="col-lg-5">
+          <div class="card">
+            <div class="card-header">
+              <i class="bi bi-gear-fill me-2"></i>Experiment Configuration
+            </div>
+            <div class="card-body">
+          <form id="experiment-form">
+            <div class="mb-4">
+              <label for="experiment-mode" class="form-label"><i class="bi bi-diagram-3 me-2"></i>Experiment Mode</label>
+              <select class="form-select" id="experiment-mode">
+                <option value="single_persona">🎯 Single Persona</option>
+                <option value="mixed_persona">🎲 Mixed Persona</option>
+                <option value="sequential_persona">📊 Sequential Persona</option>
+                <option value="random_choice">🎰 Random Choice</option>
+              </select>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="mb-3 text-center">
+              <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#add-persona-modal">
+                <i class="bi bi-person-plus me-2"></i>Add Persona to Database
+              </button>
+            </div>
+            <div class="mb-4" id="profiles-section">
+              <label for="profiles" class="form-label"><i class="bi bi-people-fill me-2"></i>Profiles</label>
+              <div id="num-personas-section" style="display: none;" class="mb-3">
+                <label for="num-personas" class="form-label">Number of Personas</label>
+                <input type="number" class="form-control" id="num-personas" min="1" value="2">
+                <button type="button" class="btn btn-secondary mt-2 w-100" id="generate-persona-selectors">
+                  <i class="bi bi-plus-circle me-2"></i>Generate Selectors
+                </button>
+              </div>
+              <div id="single-profile-section">
+                <select class="form-select" id="single-profile">
+                  <!-- Profiles will be loaded here -->
+                </select>
+              </div>
+              <div id="multiple-personas-container" class="mt-2">
+                <!-- Multiple persona selectors will be generated here -->
+              </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="mb-4">
+              <label for="contexts" class="form-label"><i class="bi bi-folder-fill me-2"></i>Context</label>
+              <div class="mb-2 text-center">
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#add-context-modal">
+                  <i class="bi bi-folder-plus me-2"></i>Add Context
+                </button>
+              </div>
+              <select class="form-select" id="contexts" required>
+                <!-- Contexts will be loaded here -->
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="max-depth" class="form-label"><i class="bi bi-layers-fill me-2"></i>Max Depth</label>
+                <input type="number" class="form-control" id="max-depth" value="50">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="concurrent-users" class="form-label"><i class="bi bi-people me-2"></i>Concurrent Users</label>
+                <input type="number" class="form-control" id="concurrent-users" value="1">
+              </div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-play-circle-fill me-2"></i>Start Experiment
+              </button>
+            </div>
+          </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-activity me-2"></i>Running Experiments</span>
+              <button class="btn btn-sm btn-danger" id="clear-experiments-btn">
+                <i class="bi bi-trash-fill me-1"></i>Clear Exited
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th><i class="bi bi-tag me-1"></i>Experiment</th>
+                      <th><i class="bi bi-person me-1"></i>Profile(s)</th>
+                      <th><i class="bi bi-circle-fill me-1"></i>Status</th>
+                      <th><i class="bi bi-hourglass me-1"></i>Phase</th>
+                      <th><i class="bi bi-graph-up me-1"></i>Progress</th>
+                      <th><i class="bi bi-eye me-1"></i>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="experiment-status">
+                    <tr>
+                      <td colspan="6" class="text-center text-muted">
+                        <i class="bi bi-hourglass-split"></i> No experiments running
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+
+    <!-- Add Persona Modal -->
+    <div class="modal fade" id="add-persona-modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-person-plus-fill me-2"></i>Add New Persona</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="add-persona-form">
+              <div class="mb-3">
+                <label for="persona-name" class="form-label"><i class="bi bi-tag-fill me-2"></i>Persona Name</label>
+                <input type="text" class="form-control" id="persona-name" placeholder="e.g., Tech Enthusiast" required>
+              </div>
+              <div class="mb-3">
+                <label for="persona-description" class="form-label"><i class="bi bi-card-text me-2"></i>Persona Description</label>
+                <textarea class="form-control" id="persona-description" rows="4" placeholder="Describe the persona's interests, demographics, and viewing habits..." required></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="bi bi-x-circle me-2"></i>Close
+            </button>
+            <button type="button" class="btn btn-primary" id="save-persona">
+              <i class="bi bi-check-circle me-2"></i>Save Persona
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Context Modal -->
+    <div class="modal fade" id="add-context-modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-folder-plus me-2"></i>Add New Context</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="add-context-form">
+              <div class="mb-3">
+                <label for="context-name" class="form-label"><i class="bi bi-tag-fill me-2"></i>Context Name</label>
+                <input type="text" class="form-control" id="context-name" placeholder="e.g., Tech News Context" required>
+              </div>
+              <div class="mb-3">
+                <label for="context-description" class="form-label"><i class="bi bi-card-text me-2"></i>Context Description</label>
+                <textarea class="form-control" id="context-description" rows="3" placeholder="Describe the context and its purpose..."></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="context-videos" class="form-label"><i class="bi bi-camera-video me-2"></i>Video IDs (comma-separated)</label>
+                <input type="text" class="form-control" id="context-videos" placeholder="dQw4w9WgXcQ, jNQXAC9IVRw, ..." required>
+                <small class="form-text text-muted">Enter YouTube video IDs separated by commas</small>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="bi bi-x-circle me-2"></i>Close
+            </button>
+            <button type="button" class="btn btn-primary" id="save-context">
+              <i class="bi bi-check-circle me-2"></i>Save Context
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Database Viewer Modal -->
+    <div class="modal fade" id="database-modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-database-fill me-2"></i>Database Viewer</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-3">
+                <h6 class="mb-3"><i class="bi bi-table me-2"></i>Tables</h6>
+                <div class="list-group" id="table-list">
+                  <button class="list-group-item list-group-item-action" data-table="sessions">
+                    <i class="bi bi-circle-fill me-2" style="font-size: 8px;"></i>sessions
+                  </button>
+                  <button class="list-group-item list-group-item-action" data-table="videos">
+                    <i class="bi bi-circle-fill me-2" style="font-size: 8px;"></i>videos
+                  </button>
+                  <button class="list-group-item list-group-item-action" data-table="recommendation_log">
+                    <i class="bi bi-circle-fill me-2" style="font-size: 8px;"></i>recommendation_log
+                  </button>
+                  <button class="list-group-item list-group-item-action" data-table="profiles">
+                    <i class="bi bi-circle-fill me-2" style="font-size: 8px;"></i>profiles
+                  </button>
+                  <button class="list-group-item list-group-item-action" data-table="experiment_contexts">
+                    <i class="bi bi-circle-fill me-2" style="font-size: 8px;"></i>experiment_contexts
+                  </button>
+                  <button class="list-group-item list-group-item-action" data-table="persona_filter_log">
+                    <i class="bi bi-circle-fill me-2" style="font-size: 8px;"></i>persona_filter_log
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-9">
+                <div class="mb-3">
+                  <label class="form-label"><strong>Selected Table:</strong> <span id="selected-table-name">-</span></label>
+                  <div class="mb-2">
+                    <small class="text-muted">Showing last 100 rows</small>
+                  </div>
+                </div>
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                  <table class="table table-sm table-striped table-hover" id="db-table-data">
+                    <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+                      <tr id="db-table-headers"></tr>
+                    </thead>
+                    <tbody id="db-table-body">
+                      <tr>
+                        <td class="text-center text-muted" colspan="10">
+                          <i class="bi bi-arrow-left me-2"></i>Select a table to view its contents
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div id="db-row-count" class="text-muted small mt-2"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="bi bi-x-circle me-2"></i>Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settings-modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-gear-fill me-2"></i>Scraping Settings</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="settings-form">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="setting-max-duration" class="form-label">
+                    <i class="bi bi-clock-fill me-2"></i>Max Duration (seconds)
+                  </label>
+                  <input type="number" class="form-control" id="setting-max-duration" min="1" value="300">
+                  <small class="form-text text-muted">Maximum time to watch each video</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="setting-parser-method" class="form-label">
+                    <i class="bi bi-code-slash me-2"></i>Parser Method
+                  </label>
+                  <select class="form-select" id="setting-parser-method">
+                    <option value="bs">BeautifulSoup (bs)</option>
+                    <option value="selenium">Selenium</option>
+                  </select>
+                  <small class="form-text text-muted">Method to parse recommendations</small>
+                </div>
+              </div>
+
+              <div class="section-divider"></div>
+
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="setting-persona-filter-enabled" checked>
+                  <label class="form-check-label" for="setting-persona-filter-enabled">
+                    <strong><i class="bi bi-funnel-fill me-2"></i>Enable Persona Filter</strong>
+                  </label>
+                  <small class="form-text text-muted d-block">
+                    Skip irrelevant videos based on persona description
+                  </small>
+                </div>
+              </div>
+
+              <div id="persona-filter-settings">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="setting-persona-filter-seconds" class="form-label">
+                      <i class="bi bi-fast-forward-fill me-2"></i>Persona Filter Seconds
+                    </label>
+                    <input type="number" class="form-control" id="setting-persona-filter-seconds" min="1" value="60">
+                    <small class="form-text text-muted">Watch time for irrelevant videos</small>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="setting-persona-filter-transcript-seconds" class="form-label">
+                      <i class="bi bi-chat-left-text-fill me-2"></i>Transcript Analysis Seconds
+                    </label>
+                    <input type="number" class="form-control" id="setting-persona-filter-transcript-seconds" min="1" value="120">
+                    <small class="form-text text-muted">Transcript length for relevance check</small>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="bi bi-x-circle me-2"></i>Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="save-settings">
+              <i class="bi bi-check-circle me-2"></i>Save Settings
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

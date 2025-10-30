@@ -1,0 +1,13 @@
+.env
+.venv/
+.idea/
+methods_paper/
+scraper/config.yaml
+scraper/config.yml
+
+.vscode/
+
+scraper/__pycache__/
+
+
+configs/

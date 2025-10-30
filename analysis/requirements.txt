@@ -1,0 +1,5 @@
+pandas
+matplotlib
+seaborn
+psycopg2-binary
+python-dotenv

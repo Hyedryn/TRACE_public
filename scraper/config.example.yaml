@@ -1,0 +1,82 @@
+# YouTube Scraper Configuration
+# Copy this file to config.yaml and customize for your needs
+# Environment variables can be used with ${VAR_NAME} syntax
+
+experiment:
+  # Option 1 (Recommended): Use a named, reusable context from the database.
+  # This context must be added first using `scripts/add_context.py`.
+  context_name: "Initial Tech Exploration"
+
+  # Option 2 (For quick tests): Provide a direct list of video IDs.
+  # context_video_ids: ["dQw4w9WgXcQ", "y6120QOlsfU"]
+
+  # The mode determines how videos are chosen in the persona phase.
+  # Options: 'single_persona', 'mixed_persona', 'random_choice', 'sequential_persona'
+  mode: "mixed_persona"
+
+  # Configuration for 'single_persona' mode
+  # profile_id: 1
+
+  # Configuration for 'mixed_persona' mode
+  persona_mix:
+    - profile_id: 1
+      weight: 0.6  # 60% chance
+    - profile_id: 2
+      weight: 0.4  # 40% chance
+
+  # Configuration for 'sequential_persona' mode
+  # persona_sequence:
+  #   - profile_id: 1
+  #     steps: 20  # Use profile 1 for the first 20 videos
+  #   - profile_id: 2
+  #     steps: 30  # Then switch to profile 2 for the next 30
+
+
+# Database connection (supports environment variable substitution)
+database:
+  url: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+
+# LLM Configuration - much cleaner than environment variables!
+llm:
+  parse_recommendations:
+    provider: "openrouter"
+    model: "mistralai/mistral-small-3.2-24b-instruct"
+  
+  choose_video:
+    provider: "openrouter"
+    model: "mistralai/mistral-small-3.2-24b-instruct"
+  
+  check_relevance:
+    provider: "openrouter"
+    model: "mistralai/mistral-small-3.2-24b-instruct"
+
+# API Keys (environment variables with fallback values)
+api_keys:
+  openai: "${OPENAI_API_KEY}"
+  azure_openai_key: "${AZURE_OPENAI_KEY}"
+  azure_openai_endpoint: "${AZURE_OPENAI_ENDPOINT}"
+  openrouter: "${OPENROUTER_API_KEY}"
+
+# Scraping behavior (supports environment variables)
+scraping:
+  parser_method: "bs"  # "llm" or "bs" for BeautifulSoup fallback
+  max_duration: 300      # seconds
+  max_depth: 50            # recommendation depth
+  browser_type: "chrome" # "chrome" or "firefox"
+  
+  # Persona filtering
+  persona_filter_enabled: true
+  persona_filter_seconds: 60
+  persona_filter_transcript_seconds: 120
+
+# Selenium configuration (supports environment variables)
+selenium:
+  hub_url: "http://selenium-hub:4444"  # Set if using Selenium Grid
+  # Example: "http://selenium-hub:4444/wd/hub"
+
+# Logging configuration (supports environment variables)
+logging:
+  level: "INFO"              # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  selenium_level: "WARNING"  # Separate level for Selenium to reduce noise
+
+
